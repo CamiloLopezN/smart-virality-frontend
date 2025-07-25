@@ -19,7 +19,7 @@ function ApifyKeyModal({isModalVisible, setIsModalVisible}: IApifyKeyModalProps)
         }
     }, [isModalVisible]);
 
-    const handleChange = (e) => {
+    const handleChange = (e: any) => {
         setApifyKey(e.target.value);
         setSaved(false);
     };

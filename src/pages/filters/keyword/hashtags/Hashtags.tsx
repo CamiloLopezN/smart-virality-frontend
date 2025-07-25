@@ -196,11 +196,11 @@ const Hashtags: React.FC<Props> = ({hashtags}) => {
                                 {displayArr.map((post, i) => {
                                     const likes = post.likesCount;
                                     const comments = post.commentsCount;
-                                    const shares = post.reshareCount;
                                     const views = post.videoPlayCount ?? post.igPlayCount;
                                     const isVideo = isVideoPost(post);
                                     return (
                                         <InstagramCard
+                                    // @ts-ignore
                                             isVideo={isVideo}
                                             key={post.id}
                                             id={post.id}
