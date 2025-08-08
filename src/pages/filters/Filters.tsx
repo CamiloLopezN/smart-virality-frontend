@@ -75,7 +75,7 @@ function Filters() {
             if (isCancelledRef.current) return;
             const results = await postInstagramProfileByUsername(filters.directUrl);
             if (!isCancelledRef.current) setProfile(results);
-        } catch (error) {
+        } catch (error: any) {
             if (!isCancelledRef.current) enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
         }
     }
@@ -85,7 +85,7 @@ function Filters() {
             if (isCancelledRef.current) return;
             const results = await postInstagramPostsByUsername(filters.directUrl, filters.reelsCount);
             if (!isCancelledRef.current) setUserLinkReelsResult(results);
-        } catch (error) {
+        } catch (error: any) {
             if (!isCancelledRef.current) enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
         }
     }
@@ -95,7 +95,7 @@ function Filters() {
             if (isCancelledRef.current) return;
             const results = await postInstagramPostsByKeyword(filters.search.toLowerCase(), filters.resultsLimit);
             if (!isCancelledRef.current) setKeywordResult(results);
-        } catch (error) {
+        } catch (error: any) {
             if (!isCancelledRef.current) enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
         }
     }

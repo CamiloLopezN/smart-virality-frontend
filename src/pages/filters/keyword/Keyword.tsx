@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from "react";
+import  {useContext, useEffect, useState} from "react";
 import InstagramCard from "../../../components/shared/InstagramCard.tsx";
 import {calculatePostVirality, calculateVirality, median} from "../../../utils/constants/contants.ts";
 import Button from "../../../components/ui/Button.tsx";
@@ -113,7 +113,7 @@ function Keyword({userLinkReelsResult}: UserLinkReelsProps) {
         try {
             const results = await postInstagramProfileByUsername(username);
             setUserSelectedProfile(results);
-        } catch (error) {
+        } catch (error: any) {
             enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
         }
     }
@@ -122,7 +122,7 @@ function Keyword({userLinkReelsResult}: UserLinkReelsProps) {
         try {
             const results = await postInstagramPostsByUsername(username, 10);
             setUserSelectedPosts(results);
-        } catch (error) {
+        } catch (error: any) {
             enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
         }
     }

@@ -14,7 +14,7 @@ interface IGenericModalProps {
 function GenericModal({children, isOpen, onClose, title, isModalBlocked}: IGenericModalProps) {
     const [shouldRender, setShouldRender] = useState(isOpen);
     const [animatingIn, setAnimatingIn] = useState(false);
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const timeoutRef = useRef<any | null>(null);
     const {enqueueSnackbar} = useSnackbar()
 
     useEffect(() => {

@@ -8,7 +8,6 @@ import Filters from "./pages/filters/Filters.tsx";
 import {SnackbarProvider} from "notistack";
 import {LoadingContext} from "./utils/contexts/LoadingContext.ts";
 import {useState} from "react";
-import LoadingSpinner from "./components/ui/LoadingSpinner.tsx";
 import {CacheImagesContext, type ICacheImagesURL} from "./utils/contexts/CacheImagesContext.ts";
 
 function App() {

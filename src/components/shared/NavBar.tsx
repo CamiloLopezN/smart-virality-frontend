@@ -1,6 +1,6 @@
 import {useNavigate} from "react-router";
 import {useContext, useEffect, useState} from "react";
-import {faChartSimple, faCode, faFilter, faGear, faKey, faSave} from "@fortawesome/free-solid-svg-icons";
+import { faCode, faFilter, faGear, faKey, faSave} from "@fortawesome/free-solid-svg-icons";
 import Button from "../ui/Button.tsx";
 import IconButton from "../ui/IconButton.tsx";
 import Input from "../ui/Input.tsx";
@@ -81,7 +81,7 @@ function NavBar() {
     const instagramLogin = async () => {
         try {
             return await postInstagramLogin(instagramAccount.instagramUsername, instagramAccount.instagramPassword);
-        } catch (error) {
+        } catch (error: any) {
             setIsLoading(false);
             enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
         }
@@ -90,7 +90,7 @@ function NavBar() {
     const instagramChallengeCode = async () => {
         try {
             return await postSendInstagramChallengeCode(instagramAccount.instagramUsername, instagramAccount.challengeCode);
-        } catch (error) {
+        } catch (error: any) {
             enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
         }
     }
