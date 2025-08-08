@@ -23,15 +23,12 @@ function App() {
                     <Routes>
                         <Route element={<MainPage/>}>
                             <Route path="/" element={<Navigate to="/explore" replace/>}/>
-
                             <Route path={'/explore'} element={<Explore/>}>
                                 <Route index element={<ExploreRoot/>}/>
                                 <Route path="topics/:fit_id" element={<Topics/>}/>
                             </Route>
-                            <Route path={'/locations/:id?/:slug?'} element={<Locations/>}>
-                            </Route>
-                            <Route path={'/filters'} element={<Filters/>}>
-                            </Route>
+                            <Route path={'/locations/:id?/:slug?'} element={<Locations/>}/>
+                            <Route path={'/filters'} element={<Filters/>}/>
                         </Route>
                     </Routes>
                     {isLoading && <LoadingSpinner/>}

@@ -1,6 +1,6 @@
 import {useState} from "react";
-import InstagramCard from "../../../../components/ui/InstagramCard.tsx";
-import InstagramProfile from "../../../../components/ui/InstagramProfile.tsx";
+import InstagramCard from "../../../../components/shared/InstagramCard.tsx";
+import InstagramProfile from "../../../../components/shared/InstagramProfile.tsx";
 
 interface InstagramPost {
     id: string;

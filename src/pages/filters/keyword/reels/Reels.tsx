@@ -1,5 +1,5 @@
 import {useState} from "react";
-import InstagramCard from "../../../../components/ui/InstagramCard.tsx";
+import InstagramCard from "../../../../components/shared/InstagramCard.tsx";
 import {calculateVirality, median} from "../../../../utils/constants/contants.ts";
 
 interface IInstagramStory {

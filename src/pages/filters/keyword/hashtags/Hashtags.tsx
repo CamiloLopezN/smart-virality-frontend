@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from "react";
-import InstagramCard from "../../../../components/ui/InstagramCard.tsx";
+import InstagramCard from "../../../../components/shared/InstagramCard.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faInstagram} from "@fortawesome/free-brands-svg-icons";
 import {median} from "../../../../utils/constants/contants.ts";

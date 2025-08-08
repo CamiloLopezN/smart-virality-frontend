@@ -1,19 +1,20 @@
 import {useNavigate} from "react-router";
-import ApifyKeyModal from "./ApifyKeyModal.tsx";
 import {useState} from "react";
+import {faChartSimple, faFilter, faGear} from "@fortawesome/free-solid-svg-icons";
+import Button from "../ui/Button.tsx";
+import IconButton from "../ui/IconButton.tsx";
+import GenericModal from "../ui/GenericModal.tsx";
 
 const navBarOptions = [
     {
         label: 'Trending',
-        path: '/explore'
-    },
-    {
-        label: 'Locations',
-        path: '/locations'
+        path: '/explore',
+        icon: faChartSimple,
     },
     {
         label: 'Filters',
-        path: '/filters'
+        path: '/filters',
+        icon: faFilter,
     }
 ]
 
@@ -24,7 +25,7 @@ function NavBar() {
 
 
     return (
-        <nav className="bg-white border-gray-200 dark:bg-[#454545] ">
+        <nav className="border-gray-200 bg-gradient-to-r from-[#0f1c2e] to-[#1f2b3e]">
             <div className="flex flex-wrap items-center justify-between mx-auto px-16 py-4">
                 <a href="https://www.bicode.co/" className="flex items-center space-x-3 rtl:space-x-reverse">
                     <img src="https://www.bicode.co/wp-content/uploads/2022/10/logo-header-480x204.png" className="h-12"
@@ -40,25 +41,23 @@ function NavBar() {
                     md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 ">
                         {navBarOptions.map((navBar) => (
                             <li key={navBar.path}>
-                                <button onClick={() => navigate(navBar.path)}
-                                        className="bg-primary-100 hover:bg-primary-200 text-text-100 font-bold py-2
-                                        px-4 rounded-xl shadow-soft transition cursor-pointer"
-                                        style={{background: 'transparent', border: '2px solid white'}}
-                                        aria-current="page">
-                                    {navBar.label}
-                                </button>
+                                <Button variant={"primary"} label={navBar.label}
+                                        onClick={() => navigate(navBar.path)} icon={navBar.icon}/>
                             </li>
                         ))}
 
-                        <button className="bg-primary-100 hover:bg-primary-200 text-text-100 font-bold py-2
-                                px-4 rounded-xl shadow-soft transition cursor-pointer"
-                                onClick={() => setIsModalVisible(true)}>
-                            Update Apify Key
-                        </button>
+                        <IconButton icon={faGear} onClick={() => setIsModalVisible(true)}/>
                     </ul>
                 </div>
             </div>
-            <ApifyKeyModal isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible}/>
+            <GenericModal isOpen={isModalVisible}>
+                <div className="flex flex-col items-center justify-center p-6">
+                    <h2 className="text-2xl font-bold mb-4 text-[#acc2ef]">Settings</h2>
+                    <p className="text-[#acc2ef] mb-4">This feature is under development.</p>
+                    <Button variant={"primary"} label={"Close"} onClick={() => setIsModalVisible(false)}
+                            icon={faGear}/>
+                </div>
+            </GenericModal>
         </nav>
     );
 }

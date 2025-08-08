@@ -1,8 +1,8 @@
 import {useContext, useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faInstagram} from "@fortawesome/free-brands-svg-icons";
-import {formatNumber} from "../../utils/constants/contants";
-import {getProxiedImage} from "../../api/Proxy";
+import {formatNumber} from "../../utils/constants/contants.ts";
+import {getProxiedImage} from "../../api/Proxy.ts";
 import {CacheImagesContext} from "../../utils/contexts/CacheImagesContext.ts";
 import {faPlay} from "@fortawesome/free-solid-svg-icons";
 
@@ -41,13 +41,11 @@ function InstagramCard({
         setProxiedThumb("");
         if (thumb) {
             const isExisting = cacheImagesURL.find(item => item.url.includes(thumb));
-
             if (isExisting) {
                 setProxiedThumb(isExisting.proxyUrl)
                 setThumbLoading(false);
                 return
             }
-
             getProxiedImage(thumb)
                 .then(url => {
                     if (mounted) {

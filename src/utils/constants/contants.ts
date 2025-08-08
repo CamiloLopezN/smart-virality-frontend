@@ -22,3 +22,10 @@ export function calculateVirality(likeCounts: number, commentsCount: number, pla
     if (!medianViews || medianViews === 0) return 0;
     return (likes * 1.2 + comments * 2 + views * 0.3) / medianViews;
 }
+
+export function calculatePostVirality(likeCounts: number, commentsCount: number, medianLikes: number): number {
+    const likes = likeCounts ?? 0;
+    const comments = commentsCount ?? 0;
+    if (!medianLikes || medianLikes === 0) return 0;
+    return (likes * 1.2 + comments * 2) / medianLikes;
+}
