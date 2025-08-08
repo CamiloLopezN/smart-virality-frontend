@@ -1,4 +1,4 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import InstagramCard from "../../../components/shared/InstagramCard.tsx";
 import {calculatePostVirality, calculateVirality, median} from "../../../utils/constants/contants.ts";
 import InstagramProfile from "../../../components/shared/InstagramProfile.tsx";
@@ -81,6 +81,17 @@ function UserLinkReels({userLinkReelsResult, profile}: UserLinkReelsProps) {
             virality: calculatePostVirality(post.like_count || 0, post.comment_count || 0, medianLikes),
         }))
         .sort((a, b) => b.virality - a.virality);
+
+    useEffect(() => {
+        if (clipsWithVirality.length > 0) {
+            setActiveTab('clips');
+            return
+        }
+        if (postsWithVirality.length > 0) {
+            setActiveTab('posts');
+            return
+        }
+    }, [userLinkReelsResult]);
 
     if (!profile) return null;
 

@@ -1,16 +1,17 @@
 import {useNavigate} from "react-router";
-import {useState} from "react";
-import {faChartSimple, faFilter, faGear} from "@fortawesome/free-solid-svg-icons";
+import {useContext, useEffect, useState} from "react";
+import {faChartSimple, faCode, faFilter, faGear, faKey, faSave} from "@fortawesome/free-solid-svg-icons";
 import Button from "../ui/Button.tsx";
 import IconButton from "../ui/IconButton.tsx";
+import Input from "../ui/Input.tsx";
+import {faInstagram} from "@fortawesome/free-brands-svg-icons";
+import {useSnackbar} from "notistack";
 import GenericModal from "../ui/GenericModal.tsx";
+import {postInstagramLogin, postSendInstagramChallengeCode} from "../../api/locallyInstagram.ts";
+import {LoadingContext} from "../../utils/contexts/LoadingContext.ts";
+import LinearProgress from "../ui/LinearProgress.tsx";
 
 const navBarOptions = [
-    {
-        label: 'Trending',
-        path: '/explore',
-        icon: faChartSimple,
-    },
     {
         label: 'Filters',
         path: '/filters',
@@ -20,9 +21,91 @@ const navBarOptions = [
 
 function NavBar() {
 
-    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(!localStorage.getItem("instagramAccount"));
+    const [isModalBlocked, setIsModalBlocked] = useState(false);
     const navigate = useNavigate();
+    const [instagramAccount, setInstagramAccount] = useState<{
+        instagramUsername: string;
+        instagramPassword: string;
+        challengeCode: string;
+    }>({
+        instagramUsername: "",
+        instagramPassword: "",
+        challengeCode: "",
+    });
+    const [isNeedChallenge, setIsNeedChallenge] = useState(false);
+    const {isLoading, setIsLoading} = useContext(LoadingContext)
+    const {enqueueSnackbar} = useSnackbar()
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const {name, value, type} = e.target;
+        setInstagramAccount((prev) => ({
+            ...prev,
+            [name]: type === "number" ? Number(value) : value,
+        }));
+    };
+
+    const handleSave = async () => {
+        setIsLoading(true);
+        const result = await instagramLogin();
+        if (result.success) {
+            localStorage.setItem("instagramAccount", JSON.stringify(instagramAccount));
+            setIsNeedChallenge(false);
+            setIsModalBlocked(false);
+            setIsModalVisible(false);
+            enqueueSnackbar("Instagram account saved successfully!", {variant: "success"});
+        }
+        if (result.pending_challenge) {
+            enqueueSnackbar("Pending challenge detected, please enter the code sent to your Instagram account.", {variant: "warning"});
+            setIsNeedChallenge(true);
+        }
+        setIsLoading(false);
+    }
+
+    const handleChallengeCode = async () => {
+        setIsLoading(true);
+        const result = await instagramChallengeCode();
+        if (result.success) {
+            localStorage.setItem("instagramAccount", JSON.stringify(instagramAccount));
+            setIsLoading(false);
+            setIsNeedChallenge(false);
+            setIsModalBlocked(false);
+            setIsModalVisible(false);
+            enqueueSnackbar("Instagram challenge code sent successfully!", {variant: "success"});
+            return
+        }
+        enqueueSnackbar("Failed to send challenge code, please try again.", {variant: "error"});
+
+    }
+
+    const instagramLogin = async () => {
+        try {
+            return await postInstagramLogin(instagramAccount.instagramUsername, instagramAccount.instagramPassword);
+        } catch (error) {
+            setIsLoading(false);
+            enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
+        }
+    }
+
+    const instagramChallengeCode = async () => {
+        try {
+            return await postSendInstagramChallengeCode(instagramAccount.instagramUsername, instagramAccount.challengeCode);
+        } catch (error) {
+            enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
+        }
+    }
+
+
+    useEffect(() => {
+        if (localStorage.getItem("instagramAccount")) {
+            const storedAccount = JSON.parse(localStorage.getItem("instagramAccount") || "{}");
+            setInstagramAccount(storedAccount);
+            return
+        }
+        if (!localStorage.getItem("instagramAccount")) {
+            setIsModalBlocked(true);
+        }
+    }, []);
 
     return (
         <nav className="border-gray-200 bg-gradient-to-r from-[#0f1c2e] to-[#1f2b3e]">
@@ -50,12 +133,44 @@ function NavBar() {
                     </ul>
                 </div>
             </div>
-            <GenericModal isOpen={isModalVisible}>
-                <div className="flex flex-col items-center justify-center p-6">
-                    <h2 className="text-2xl font-bold mb-4 text-[#acc2ef]">Settings</h2>
-                    <p className="text-[#acc2ef] mb-4">This feature is under development.</p>
-                    <Button variant={"primary"} label={"Close"} onClick={() => setIsModalVisible(false)}
-                            icon={faGear}/>
+            <GenericModal isModalBlocked={isModalBlocked} onClose={() => setIsModalVisible(false)}
+                          title={"Settings"} isOpen={isModalVisible}>
+                <div className="flex flex-col items-center justify-center gap-4">
+                    <Input isDisabled={isNeedChallenge} id={"instagramUsername"} label={"Instagram username"}
+                           onChange={handleChange}
+                           value={instagramAccount.instagramUsername} placeholder={"Enter username..."}
+                           icon={faInstagram}
+                           isRequired={true} type={"text"}/>
+                    <Input isDisabled={isNeedChallenge} id={"instagramPassword"} label={"Instagram password"}
+                           onChange={handleChange}
+                           value={instagramAccount.instagramPassword} placeholder={"Enter password..."} icon={faKey}
+                           isRequired={true} type={"password"}/>
+
+                    {isLoading && (
+                        <LinearProgress indeterminate/>
+                    )}
+                    {isNeedChallenge && (
+                        <Input id={"challengeCode"} label={"Instagram code challenge"} onChange={handleChange}
+                               value={instagramAccount.challengeCode} placeholder={"Enter the code..."}
+                               icon={faCode}
+                               isRequired={true} type={"text"}/>
+                    )}
+
+                    <div className={'flex items-center justify-end w-full'}>
+                        <Button
+                            isDisabled={instagramAccount.instagramUsername === "" || instagramAccount.instagramPassword === "" || isLoading}
+                            onClick={isNeedChallenge ? handleChallengeCode : handleSave}
+                            label={isNeedChallenge ? "Send Challenge Code" : "Save Account"}
+                            variant={"secondary"} icon={faSave}/>
+                    </div>
+
+                    <span>
+                        <span className="text-xs text-[#e0e0e0]">Note: </span>
+                        <span className="text-xs text-[#4d648d]">
+                            This account will be used to fetch Instagram data.
+                            Do not use your personal account, create a new one for this purpose.
+                        </span>
+                    </span>
                 </div>
             </GenericModal>
         </nav>

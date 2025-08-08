@@ -1,6 +1,7 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import type {IconDefinition} from "@fortawesome/fontawesome-svg-core";
-import type {ChangeEvent} from "react";
+import {type ChangeEvent, useState} from "react";
+import {faEye, faEyeSlash} from "@fortawesome/free-solid-svg-icons";
 
 interface IInputProps {
     id: string;
@@ -18,6 +19,9 @@ interface IInputProps {
 
 
 function Input({isDisabled, label, onChange, value, placeholder, icon, id, isRequired, type}: IInputProps) {
+
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
     return (
         <div className="flex flex-col w-full">
             <label htmlFor={id}
@@ -30,7 +34,7 @@ function Input({isDisabled, label, onChange, value, placeholder, icon, id, isReq
                     <FontAwesomeIcon icon={icon} color={'#acc2ef'}/>
                 </div>
                 <input
-                    type={type}
+                    type={type === "password" && isPasswordVisible ? "text" : type}
                     id={id}
                     name={id}
                     value={value}
@@ -41,6 +45,14 @@ function Input({isDisabled, label, onChange, value, placeholder, icon, id, isReq
                     placeholder={placeholder}
                     required={isRequired}
                 />
+
+                {type === "password" && (
+                    <button onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                            className="absolute inset-y-0 end-0 flex items-center pe-3 cursor-pointer">
+                        <FontAwesomeIcon icon={isPasswordVisible ? faEyeSlash : faEye} color={'#acc2ef'}/>
+                    </button>
+                )}
+
             </div>
         </div>
     );

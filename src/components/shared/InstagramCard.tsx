@@ -20,11 +20,13 @@ interface IInstagramCardProps {
     comment_count: number;
     like_count: number;
     isVideo?: boolean;
+    user?: any
 }
 
 function InstagramCard({
                            i, playingId, thumb, setPlayingId, postUrl, videoUrl,
-                           virality, id, like_count, play_count, comment_count, caption, isVideo = true
+                           virality, id, like_count, play_count, comment_count, caption,
+                           isVideo = true, user = null
                        }: IInstagramCardProps) {
 
     const {cacheImagesURL, setCacheImagesURL} = useContext(CacheImagesContext);
@@ -32,6 +34,8 @@ function InstagramCard({
     const [thumbLoading, setThumbLoading] = useState<boolean>(true);
     const [proxiedVideoUrl, setProxiedVideoUrl] = useState<string>("");
     const [videoLoading, setVideoLoading] = useState<boolean>(!!isVideo);
+
+    const [proxiedProfilePic, setProxiedProfilePic] = useState<string>("");
 
     const getFirstLine = (text?: string) => (text ? text.split("\n")[0] : "");
 
@@ -98,11 +102,11 @@ function InstagramCard({
     }, [videoUrl, isVideo, playingId, id, thumbLoading]);
 
     const handleCardClick = () => {
-        console.log('entro al handleCardClick', {isVideo, thumbLoading, playingId, id});
         if (!isVideo) return;
         if (thumbLoading) return;
         if (playingId !== id) setPlayingId(id);
     };
+
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
             const videoCard = document.getElementById(`reel-card-${playingId}`);
@@ -113,6 +117,21 @@ function InstagramCard({
         if (playingId) document.addEventListener("mousedown", handleClick);
         return () => document.removeEventListener("mousedown", handleClick);
     }, [playingId]);
+
+
+    useEffect(() => {
+        if (!user || !user.profile_pic_url) {
+            setProxiedProfilePic("");
+            return;
+        }
+        getProxiedImage(user.profile_pic_url)
+            .then(url => {
+                setProxiedProfilePic(url)
+            })
+            .catch(() => {
+                setProxiedProfilePic("")
+            });
+    }, [user]);
 
     return (
         <div
@@ -127,8 +146,6 @@ function InstagramCard({
             }}
             onClick={handleCardClick}
         >
-
-            {/* Virality badge */}
             <span
                 className={
                     "absolute top-4 left-4 rounded px-2 py-0.5 text-xs font-bold z-10 shadow " +
@@ -207,6 +224,19 @@ function InstagramCard({
                     <div
                         className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent pointer-events-none transition-opacity"/>
                     <div className="absolute left-4 bottom-4 flex flex-col gap-3 text-white z-10">
+                        {user && (
+                            <div className={'flex flex-row gap-2'}>
+                                <img className={"h-[32px] w-[32px] rounded-full"} src={proxiedProfilePic}/>
+                                <div className={'flex flex-col gap-2'}>
+                                    <p className={'text-sm font-bold flex flex-row gap-2 items-center'}>
+                                        {user.username}
+                                        <FontAwesomeIcon icon={faInstagram} size={'sm'}/>
+                                    </p>
+                                    <p className={'text-sm text-neutral-400'}>{user.full_name}</p>
+                                </div>
+                            </div>
+                        )}
+
                         <span className="font-bold text-base line-clamp-2 drop-shadow">
                             {getFirstLine(caption)}
                         </span>

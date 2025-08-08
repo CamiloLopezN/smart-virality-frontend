@@ -1,32 +1,30 @@
-import {useContext, useState} from "react";
-import Posts from "./keyword/posts/Posts.tsx";
-import Reels from "./keyword/reels/Reels.tsx";
+import React, {useContext, useRef, useState} from "react";
 import UserLinkReels, {type Profile} from "./userLink/UserLinkReels.tsx";
-import Hashtags from "./keyword/hashtags/Hashtags.tsx";
 import {useSnackbar} from "notistack";
 import {LoadingContext} from "../../utils/contexts/LoadingContext.ts";
-import {faSearch, faUser} from "@fortawesome/free-solid-svg-icons";
+import {faSearch, faUser, faWarning} from "@fortawesome/free-solid-svg-icons";
 import {faInstagram} from "@fortawesome/free-brands-svg-icons";
 import {
-    getInstagramPostsByKeyword,
-    getInstagramPostsByUsername,
-    getInstagramProfileByUsername
+    postInstagramPostsByKeyword,
+    postInstagramPostsByUsername,
+    postInstagramProfileByUsername
 } from "../../api/locallyInstagram.ts";
 import Input from "../../components/ui/Input.tsx";
 import Button from "../../components/ui/Button.tsx";
 import Keyword from "./keyword/Keyword.tsx";
+import LinearProgress from "../../components/ui/LinearProgress.tsx";
 
 function Filters() {
 
-    const [postsUsersResult, setPostsUsersResult] = useState([]);
-    const [reelsUsersResult, setReelsUsersResult] = useState([]);
+    const [keywordResult, setKeywordResult] = useState([]);
+
     const [userLinkReelsResult, setUserLinkReelsResult] = useState([]);
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [hashtagsResult, setHashtagsResult] = useState([]);
+    const isCancelledRef = useRef(true);
+
     const [searchByLink, setSearchByLink] = useState(true);
     const [filters, setFilters] = useState({
         search: "",
-        resultsType: "",
         onlyPostsNewerThan: "",
         directUrl: "",
         reelsCount: 10,
@@ -55,6 +53,7 @@ function Filters() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        isCancelledRef.current = false;
         setIsLoading(true);
         try {
             if (searchByLink) {
@@ -64,55 +63,56 @@ function Filters() {
                 await getPostsByKeyword();
             }
         } catch (error) {
+            enqueueSnackbar("An error occurred while fetching data.", {variant: 'error'});
+            console.error("Error fetching data:", error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const getSearchByLink = async () => {
+    const getProfileByUsername = async () => {
         try {
-            const results = await getInstagramPostsByUsername(
-                filters.directUrl,
-                filters.reelsCount
-            );
-            setUserLinkReelsResult(results);
-        } catch (error: any) {
-            enqueueSnackbar(error.message, {variant: 'error'});
+            if (isCancelledRef.current) return;
+            const results = await postInstagramProfileByUsername(filters.directUrl);
+            if (!isCancelledRef.current) setProfile(results);
+        } catch (error) {
+            if (!isCancelledRef.current) enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
         }
     }
 
-    const getProfileByUsername = async () => {
+    const getSearchByLink = async () => {
         try {
-            const results = await getInstagramProfileByUsername(filters.directUrl);
-            setProfile(results);
-        } catch (error: any) {
-            enqueueSnackbar(error.message, {variant: 'error'});
+            if (isCancelledRef.current) return;
+            const results = await postInstagramPostsByUsername(filters.directUrl, filters.reelsCount);
+            if (!isCancelledRef.current) setUserLinkReelsResult(results);
+        } catch (error) {
+            if (!isCancelledRef.current) enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
         }
     }
 
     const getPostsByKeyword = async () => {
         try {
-            const results = await getInstagramPostsByKeyword(filters.search, filters.resultsLimit);
-            if (filters.resultsType === "posts") {
-                setPostsUsersResult(results);
-            }
-            if (filters.resultsType === "stories") {
-                setReelsUsersResult(results);
-            }
-            if (filters.resultsType === "hashtags") {
-                setHashtagsResult(results);
-            }
-        } catch (error: any) {
-            enqueueSnackbar(error.message, {variant: 'error'});
+            if (isCancelledRef.current) return;
+            const results = await postInstagramPostsByKeyword(filters.search.toLowerCase(), filters.resultsLimit);
+            if (!isCancelledRef.current) setKeywordResult(results);
+        } catch (error) {
+            if (!isCancelledRef.current) enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
         }
     }
+
+    const handleCancel = (e: React.FormEvent) => {
+        e.preventDefault()
+        isCancelledRef.current = true;
+        enqueueSnackbar("Search cancelled.", {variant: 'info'});
+        setIsLoading(false);
+    };
+
     return (
         <div className={'flex flex-col w-full gap-6 bg-[#1f2b3e] p-4 rounded-lg'}>
             <form
                 onSubmit={handleSubmit}
                 className="w-full mx-auto flex flex-col gap-6 py-4"
             >
-                {/* Switch */}
                 <div className="flex items-center gap-4">
                     <span className={`text-sm font-medium ${searchByLink ? 'text-[#acc2ef]' : 'text-[#e0e0e0]'}`}>
                         By Account
@@ -120,8 +120,8 @@ function Filters() {
                     <button
                         type="button"
                         onClick={handleToggle}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none
-                        ${searchByLink ? 'bg-[#acc2ef]' : 'bg-gray-400'}`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full 
+                        transition-colors focus:outline-none bg-[#acc2ef] cursor-pointer`}
                         aria-label="Switch search type"
                     >
                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform absolute
@@ -146,7 +146,13 @@ function Filters() {
                                    value={filters.reelsCount} icon={faInstagram}
                                    placeholder={"Enter number of reels to scrape..."}/>
                             <div/>
-                            <div className={'flex items-center justify-end'}>
+                            <div className={'flex items-center justify-end gap-3'}>
+                                {!isCancelledRef.current && isLoading && (
+                                    <Button variant={"danger"}
+                                            isDisabled={isCancelledRef.current}
+                                            label={"Cancel"} onClick={handleCancel} icon={faWarning}/>
+                                )}
+
                                 <Button variant={"secondary"}
                                         isDisabled={filters.directUrl === '' || filters.reelsCount <= 0}
                                         label={"Search"} type={"submit"} icon={faSearch}/>
@@ -164,7 +170,13 @@ function Filters() {
                                    id="resultsLimit"
                                    value={filters.resultsLimit} icon={faInstagram} placeholder={"Results Limit."}/>
                             <div/>
-                            <div className={'flex items-center justify-end'}>
+                            <div className={'flex items-center justify-end gap-3'}>
+
+                                {!isCancelledRef.current && isLoading && (
+                                    <Button variant={"danger"}
+                                            isDisabled={isCancelledRef.current}
+                                            label={"Cancel"} onClick={handleCancel} icon={faWarning}/>
+                                )}
                                 <Button variant={"secondary"}
                                         isDisabled={filters.search === '' || filters.resultsLimit <= 0}
                                         label={"Search"} type={"submit"} icon={faSearch}/>
@@ -174,13 +186,16 @@ function Filters() {
                 </div>
             </form>
             <>
-                {!searchByLink && (
-                    <Keyword />
+                {isLoading && (
+                    <LinearProgress indeterminate/>
                 )}
+                    {!searchByLink && (
+                        <Keyword userLinkReelsResult={keywordResult}/>
+                    )}
 
-                {searchByLink && (
-                    <UserLinkReels profile={profile} userLinkReelsResult={userLinkReelsResult}/>
-                )}
+                    {searchByLink && (
+                        <UserLinkReels profile={profile} userLinkReelsResult={userLinkReelsResult}/>
+                    )}
             </>
         </div>
     );

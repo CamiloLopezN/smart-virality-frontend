@@ -92,7 +92,6 @@ export async function postInstagramScraper(filters: {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Apify-key': ApifyKey || '',
             },
             body: JSON.stringify(filters),
         });
@@ -117,7 +116,6 @@ export async function postInstagramExploreReelsScraper(filters: {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'Apify-key': ApifyKey || '',
             },
             body: JSON.stringify(filters),
         });

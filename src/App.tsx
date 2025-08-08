@@ -31,7 +31,7 @@ function App() {
                             <Route path={'/filters'} element={<Filters/>}/>
                         </Route>
                     </Routes>
-                    {isLoading && <LoadingSpinner/>}
+                    {/*{isLoading && <LoadingSpinner/>}*/}
                 </LoadingContext.Provider>
             </CacheImagesContext.Provider>
         </SnackbarProvider>
