@@ -53,6 +53,11 @@ function NavBar() {
             setIsNeedChallenge(false);
             setIsModalBlocked(false);
             setIsModalVisible(false);
+            setInstagramAccount({
+                instagramUsername: instagramAccount.instagramUsername,
+                instagramPassword: instagramAccount.instagramPassword,
+                challengeCode: "",
+            })
             enqueueSnackbar("Instagram account saved successfully!", {variant: "success"});
         }
         if (result.pending_challenge) {
@@ -71,6 +76,11 @@ function NavBar() {
             setIsNeedChallenge(false);
             setIsModalBlocked(false);
             setIsModalVisible(false);
+            setInstagramAccount({
+                instagramUsername: instagramAccount.instagramUsername,
+                instagramPassword: instagramAccount.instagramPassword,
+                challengeCode: "",
+            })
             enqueueSnackbar("Instagram challenge code sent successfully!", {variant: "success"});
             return
         }
