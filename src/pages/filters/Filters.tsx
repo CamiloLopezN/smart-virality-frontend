@@ -57,9 +57,11 @@ function Filters() {
         setIsLoading(true);
         try {
             if (searchByLink) {
+                resetByAccount();
                 await getProfileByUsername();
                 await getSearchByLink();
             } else {
+                resetByKeyword();
                 await getPostsByKeyword();
             }
         } catch (error) {
@@ -106,6 +108,14 @@ function Filters() {
         enqueueSnackbar("Search cancelled.", {variant: 'info'});
         setIsLoading(false);
     };
+
+    const resetByAccount = () => {
+        setUserLinkReelsResult([]);
+    }
+
+    const resetByKeyword = () => {
+        setKeywordResult([]);
+    }
 
     return (
         <div className={'flex flex-col w-full gap-6 bg-[#1f2b3e] p-4 rounded-lg'}>
@@ -189,13 +199,13 @@ function Filters() {
                 {isLoading && (
                     <LinearProgress indeterminate/>
                 )}
-                    {!searchByLink && (
-                        <Keyword userLinkReelsResult={keywordResult}/>
-                    )}
+                {!searchByLink && (
+                    <Keyword userLinkReelsResult={keywordResult}/>
+                )}
 
-                    {searchByLink && (
-                        <UserLinkReels profile={profile} userLinkReelsResult={userLinkReelsResult}/>
-                    )}
+                {searchByLink && (
+                    <UserLinkReels profile={profile} userLinkReelsResult={userLinkReelsResult}/>
+                )}
             </>
         </div>
     );
