@@ -1,14 +1,15 @@
-import  {useContext, useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import InstagramCard from "../../../components/shared/InstagramCard.tsx";
 import {calculatePostVirality, calculateVirality, median} from "../../../utils/constants/contants.ts";
 import Button from "../../../components/ui/Button.tsx";
 import {faChartSimple, faImage, faVideo} from "@fortawesome/free-solid-svg-icons";
 import GenericModal from "../../../components/ui/GenericModal.tsx";
 import UserLinkReels, {type Profile} from "../userLink/UserLinkReels.tsx";
-import {postInstagramPostsByUsername, postInstagramProfileByUsername} from "../../../api/locallyInstagram.ts";
+import {postInstagramMediasByUserId, postInstagramProfileByUsername} from "../../../api/locallyInstagram.ts";
 import {useSnackbar} from "notistack";
 import {LoadingContext} from "../../../utils/contexts/LoadingContext.ts";
 import LinearProgress from "../../../components/ui/LinearProgress.tsx";
+import {mapHikerProfileToProfile, mapHikerUserMediasToPosts} from "../../../utils/mappers/hiker.ts";
 
 interface Post {
     id: string;
@@ -91,19 +92,21 @@ function Keyword({userLinkReelsResult}: UserLinkReelsProps) {
 
 
     const getUserPosts = async (user: any) => {
-        setUserSelected(user)
+        setUserSelected(user);
         setIsModalOpen(true);
         setIsLoading(true);
         try {
+            // 1) Perfil por username (Hiker v1) -> map a Profile UI
             await getProfileByUsername(user.username);
-            await getSearchByLink(user.username);
+            // 2) Medias por user_id (Hiker v2) -> map a Post[]
+            await getSearchByLink(String(user.pk));
         } catch (error) {
-            enqueueSnackbar("An error occurred while fetching data.", {variant: 'error'});
+            enqueueSnackbar("An error occurred while fetching data.", {variant: "error"});
             console.error("Error fetching data:", error);
         } finally {
             setIsLoading(false);
         }
-    }
+    };
 
     if (!clipsWithVirality.length && !postsWithVirality.length) {
         return null
@@ -111,21 +114,23 @@ function Keyword({userLinkReelsResult}: UserLinkReelsProps) {
 
     const getProfileByUsername = async (username: string) => {
         try {
-            const results = await postInstagramProfileByUsername(username);
-            setUserSelectedProfile(results);
+            const raw = await postInstagramProfileByUsername(username, localStorage.getItem('hikerApiKey')!);
+            const mapped = mapHikerProfileToProfile(raw);
+            setUserSelectedProfile(mapped);
         } catch (error: any) {
-            enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
+            enqueueSnackbar((error.status || '') + ': ' + (error.detail || error.message || 'Error'), {variant: 'error'});
         }
-    }
+    };
 
-    const getSearchByLink = async (username: string) => {
+    const getSearchByLink = async (userId: string) => {
         try {
-            const results = await postInstagramPostsByUsername(username, 10);
-            setUserSelectedPosts(results);
+            const raw = await postInstagramMediasByUserId(userId, localStorage.getItem('hikerApiKey')!);
+            const mapped = mapHikerUserMediasToPosts(raw);
+            setUserSelectedPosts(mapped);
         } catch (error: any) {
-            enqueueSnackbar(error.status + ': ' + error.detail, {variant: 'error'});
+            enqueueSnackbar((error.status || '') + ': ' + (error.detail || error.message || 'Error'), {variant: 'error'});
         }
-    }
+    };
 
     const resetUserSelected = () => {
         setIsModalOpen(false);
